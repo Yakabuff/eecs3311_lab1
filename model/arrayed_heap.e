@@ -168,9 +168,9 @@ feature -- Commands
 
 			size_incremented:
 				-- TODO: Constraint on `count`
-				count > old count
+				count = old count +1
 
-			same_set_of_keys_except_the_new_key:
+--			same_set_of_keys_except_the_new_key:
 --				-- TODO: Except `new_key` being just added,
 --				-- all other keys in the new `array` already exist in the old `array`.
 --				True
@@ -178,10 +178,10 @@ feature -- Commands
 
 	remove_maximum
 			-- Remove the maximum key from heap, if it is not empty.
---		require
---			non_empty_heap:
---				-- Completed for you. Do not modify.
---				not is_empty
+		require
+			non_empty_heap:
+				-- Completed for you. Do not modify.
+				not is_empty
 		do
 			-- TODO: Complete the implementation.
 			-- Hint: Make use of the `heapify` command.
@@ -196,17 +196,18 @@ feature -- Commands
 				heapify(k)
 			end
 
---		ensure
---			-- Heap property is maintained, see invariant `heap_property`.
+		ensure
+			-- Heap property is maintained, see invariant `heap_property`.
 
---			size_decremented:
---				-- TODO: Constraint on `count`
---				count = old count-1
+			size_decremented:
+				-- TODO: Constraint on `count`
+				count = old count-1
 
 --			same_set_of_keys_except_the_removed_key:
---				-- TODO: Except the key being just removed,
---				-- all other keys in the old `array` still exist in the new `array`.
---				make_set(old array)-0-array[1] ~ make_set(array)-0
+--				 --TODO: Except the key being just removed,
+--				 --all other keys in the old `array` still exist in the new `array`.
+--				(make_set(old array.deep_twin)-0-array[1])~ (make_set(array)-0)
+
 
 
 		end
@@ -227,9 +228,9 @@ feature -- Auxiliary queries for writing contracts
 			Result := make_set(a1) - 0 ~ make_set(a2) - 0
 
 		end
-	make_set(a1 : like  ARRAY):SET[INTEGER]
+	make_set(a : like  ARRAY):SET[INTEGER]
 		do
-			Result := create {SET[INTEGER]}.make_from_array (a1)
+			Result := create {SET[INTEGER]}.make_from_array (a)
 		end
 
 feature -- Queries related to heaps
@@ -274,7 +275,14 @@ feature -- Queries related to binary trees
 			-- No precondition or postcondition is needed.
 		do
 			-- TODO: Complete the implementation.
-			Result:= (2*i <= count//2) and array[2*i] /= 0
+			if
+				i<= count//2
+			then
+				Result:=  array[2*i] /= 0
+			else
+				Result:= False
+			end
+
 		end
 
 	has_right_child (i: INTEGER): BOOLEAN
@@ -283,7 +291,14 @@ feature -- Queries related to binary trees
 			-- No precondition or postcondition is needed.
 		do
 			-- TODO: Complete the implementation.
-			Result:= (2*i+1 <= count //2) and array[2*i+1] /= 0
+			if
+				i<=count//2
+			then
+				Result:=  array[2*i+1] /= 0
+			else
+				Result:=False
+			end
+
 		end
 
 	has_parent (i: INTEGER): BOOLEAN
@@ -306,7 +321,12 @@ feature -- Queries related to binary trees
 				has_left_child (i)
 		do
 			-- TODO: Complete the implementation.
-			Result:= array[2*i]
+			if
+				i<= count//2
+			then
+				Result:= array[2*i]
+			end
+
 		end
 
 	right_child_of (i: INTEGER): INTEGER
@@ -320,14 +340,19 @@ feature -- Queries related to binary trees
 				has_right_child (i)
 		do
 			-- TODO: Complete the implementation.
-			Result:= array[2*i+1]
+			if
+				i<= count//2
+			then
+				Result:= array[2*i+1]
+			end
+
 		end
 
 	parent_of (i: INTEGER): INTEGER
 			-- Parent node of what is stored at index `i`
 			-- No postcondition is needed.
 		require
-			-- Precondition completed for you. Do not modify.
+--			-- Precondition completed for you. Do not modify.
 			valid_index:
 				is_valid_index (i)
 			not_root:
@@ -358,7 +383,8 @@ feature -- Queries related to binary trees
 			-- Precondition completed for you. Do not modify.
 			valid_index:
 				is_valid_index (i)
-
+		local
+			isMaxHeap: BOOLEAN
 		do
 			-- TODO: Complete the implementation.
 --			across
@@ -371,50 +397,53 @@ feature -- Queries related to binary trees
 --				Io.put_integer (array[2*j+1])
 --				Io.put_integer (array[2*j])
 --			end
+			isMaxHeap := True
 
-			Result := across
+			across
 				i |..| (count//2) is k
-			all
+			loop
+				if
+					has_left_child(k) and not has_right_child(k)
+				then
+					isMaxHeap := array[k] > left_child_of(k) and isMaxHeap
 
-				array[k] > array[2*k+1] and array[k] > array[2*k]
+				elseif
+					has_right_child(k) and not has_left_child(k)
+				then
+					isMaxHeap:=array[k] > right_child_of(k) and isMaxHeap
+				elseif
+					has_left_child(k) and has_right_child(k)
+				then
+				 isMaxHeap:=(array[k] > array[2*k+1] and array[k] > array[2*k]) and isMaxHeap
+				elseif
+					not has_left_child(k) and not has_right_child(k)
+				then
+					isMaxHeap := isMaxHeap and True
+				end
+
 			end
 
-
-
+			Result:= isMaxHeap
 
 		ensure
 			case_of_no_children:
-				-- TODO: When index `i` denotes an external node, what happens to `Result`?
-				if
-					not has_right_child(i) and not has_left_child(i)
-				then
-					Result = True
-				else
-					Result = False
-				end
+				--TODO: When index `i` denotes an external node, what happens to `Result`?
+
+				 not has_right_child(i) and not has_left_child(i) implies Result = True
+
+
+
+
 			case_of_two_children:
 				-- TODO: When index `i` denotes an internal node with both children, what happens to `Result`?
-				if
-					(has_right_child(i) and has_left_child(i))
-				then
-					Result = (array[i] > right_child_of(i) and array[i] > left_child_of(i))
-				else
-					Result = False
-				end
+
+					(array[i] > right_child_of(i) and array[i] > left_child_of(i)) implies Result = True
+
 
 			case_of_one_child:
-				-- TODO: When index `i` denotes an internal node with only one child, what happens to `Result`?
-				if
-					has_right_child(i) and not has_left_child(i)
-				then
-					Result = (array[i] > right_child_of(i))
-				elseif
-					(has_left_child(i) and not has_right_child(i))
-				then
-					Result = (array[i] > left_child_of(i))
-				else
-					Result = False
-				end
+--				-- TODO: When index `i` denotes an internal node with only one child, what happens to `Result`?
+				(not has_right_child(i) and has_left_child(i) and array[i]>left_child_of(i))
+				 and (not has_left_child(i) and has_right_child(i) and array[i]>right_child_of(i)) implies Result=True
 
 		end
 

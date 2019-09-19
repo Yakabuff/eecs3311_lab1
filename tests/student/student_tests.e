@@ -22,6 +22,9 @@ feature -- Add tests
 			add_boolean_case (agent t3)
 			add_boolean_case (agent t4)
 			add_boolean_case (agent t5)
+			add_boolean_case(agent t6)
+			add_boolean_case(agent t7)
+			add_boolean_case(agent t8)
 		end
 
 feature -- Tests
@@ -30,12 +33,19 @@ feature -- Tests
 		local
 			h: ARRAYED_HEAP
 		do
-			comment ("t1: insert into array")
+			comment ("t1: test max heap")
 
 
 
 			create h.make (<<4, 1, 3, 2, 16, 9, 10, 14, 8, 7>>, 15)
-			Result := h.array ~ <<4, 1, 3, 2, 16, 9, 10, 14, 8, 7, 0, 0, 0 , 0 ,0>>
+			Io.put_string ("is a max heap")
+			Io.put_string ("checking 1")
+			Io.put_boolean (h.is_a_max_heap (1))
+			Io.put_string ("checking 3")
+			Io.put_boolean (h.is_a_max_heap (3))
+			Io.put_string ("checking 10")
+			Io.put_boolean (h.is_a_max_heap (10))
+			Result:= h.is_a_max_heap (1) and h.is_a_max_heap (3) and h.is_a_max_heap (10)
 			check Result end
 		end
 
@@ -143,5 +153,57 @@ feature -- Tests
 				Result := s.next_task_to_execute ~ "HeeYeon's Request"
 				check Result end
 
+		end
+
+	t6: BOOLEAN
+		local
+			h: ARRAYED_HEAP
+		do
+			comment ("t6: test max heap 2 elements")
+
+
+
+			create h.make (<<4, 1>>, 5)
+			Io.put_string ("is a max heap")
+			Io.put_string ("checking 1")
+			Io.put_boolean (h.is_a_max_heap (1))
+			Io.put_string ("checking 2")
+			Io.put_boolean (h.is_a_max_heap (2))
+
+			Result:= h.is_a_max_heap (1) and h.is_a_max_heap (2)
+			check Result end
+		end
+	t7: BOOLEAN
+		local
+			h: ARRAYED_HEAP
+		do
+			comment ("t7: test max heap 1 elements")
+
+
+
+			create h.make (<<4>>,1)
+			Io.put_string ("is a max heap")
+			Io.put_string ("checking 1")
+			Io.put_boolean (h.is_a_max_heap (1))
+
+
+			Result:= h.is_a_max_heap (1)
+			check Result end
+		end
+
+	t8: BOOLEAN
+		local
+			h: ARRAYED_HEAP
+		do
+			comment ("t9: test is permutation")
+
+
+
+			create h.make (<<>>,0)
+
+
+
+			Result:= h.is_permutation_of (<<1>>, <<1>>)
+			check Result end
 		end
 end
